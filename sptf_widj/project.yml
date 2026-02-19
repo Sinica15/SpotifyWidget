@@ -1,0 +1,61 @@
+name: SpotifyWidget
+options:
+  bundleIdPrefix: com.sptfwidj
+  deploymentTarget:
+    macOS: "14.0"
+  xcodeVersion: "15.0"
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+
+targets:
+  SpotifyWidgetApp:
+    type: application
+    platform: macOS
+    sources:
+      - path: SpotifyWidget
+        excludes:
+          - "*.entitlements"
+          - Info.plist
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.sptfwidj.app
+        CODE_SIGN_ENTITLEMENTS: SpotifyWidget/SpotifyWidget.entitlements
+        INFOPLIST_FILE: SpotifyWidget/Info.plist
+        GENERATE_INFOPLIST_FILE: false
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: "1"
+        PRODUCT_NAME: "Spotify Widget"
+        CODE_SIGN_IDENTITY: "Apple Development"
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: ""
+    dependencies:
+      - target: WidgetExtension
+        embed: true
+
+  WidgetExtension:
+    type: app-extension
+    platform: macOS
+    sources:
+      - path: WidgetExtension
+        excludes:
+          - "*.entitlements"
+          - Info.plist
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.sptfwidj.app.widget
+        CODE_SIGN_ENTITLEMENTS: WidgetExtension/WidgetExtension.entitlements
+        INFOPLIST_FILE: WidgetExtension/Info.plist
+        GENERATE_INFOPLIST_FILE: false
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: "1"
+        PRODUCT_NAME: WidgetExtension
+        SKIP_INSTALL: true
+        CODE_SIGN_IDENTITY: "Apple Development"
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: ""
+        LD_RUNPATH_SEARCH_PATHS:
+          - "$(inherited)"
+          - "@executable_path/../Frameworks"
+          - "@executable_path/../../../../Frameworks"
