@@ -6,6 +6,7 @@ A lightweight macOS Notification Center widget that displays the currently playi
 
 <p>
   <img src="imgs/photo_2026-02-19 23.26.42.jpeg" width="360" />
+  <br/>
   <img src="imgs/photo_2026-02-19 23.26.43.jpeg" width="360" />
 </p>
 
