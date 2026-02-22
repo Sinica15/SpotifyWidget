@@ -47,7 +47,7 @@ enum SpotifyBridge {
         end if
         """
 
-        guard let output = runAppleScript(script),
+        guard let output = runScript(script),
               output != "NOT_RUNNING",
               output != "STOPPED",
               output != "ERROR" else {
@@ -69,23 +69,38 @@ enum SpotifyBridge {
     }
 
     static func playPause() {
-        runAppleScript(#"tell application "Spotify" to playpause"#)
+        runScript(#"tell application "Spotify" to playpause"#)
     }
 
     static func nextTrack() {
-        runAppleScript(#"tell application "Spotify" to next track"#)
+        runScript(#"tell application "Spotify" to next track"#)
     }
 
     static func previousTrack() {
-        runAppleScript(#"tell application "Spotify" to previous track"#)
+        runScript(#"tell application "Spotify" to previous track"#)
     }
 
     @discardableResult
-    private static func runAppleScript(_ source: String) -> String? {
-        var error: NSDictionary?
-        guard let script = NSAppleScript(source: source) else { return nil }
-        let result = script.executeAndReturnError(&error)
-        if error != nil { return nil }
-        return result.stringValue
+    private static func runScript(_ source: String) -> String? {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
+        process.arguments = ["-e", source]
+
+        let outPipe = Pipe()
+        let errPipe = Pipe()
+        process.standardOutput = outPipe
+        process.standardError = errPipe
+
+        do {
+            try process.run()
+            process.waitUntilExit()
+        } catch {
+            return nil
+        }
+
+        guard process.terminationStatus == 0 else { return nil }
+        let data = outPipe.fileHandleForReading.readDataToEndOfFile()
+        return String(data: data, encoding: .utf8)?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }

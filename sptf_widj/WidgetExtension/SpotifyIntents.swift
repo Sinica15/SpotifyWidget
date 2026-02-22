@@ -4,10 +4,11 @@ import WidgetKit
 struct PlayPauseIntent: AppIntent {
     static var title: LocalizedStringResource = "Play/Pause Spotify"
     static var description = IntentDescription("Toggle play/pause in Spotify")
+    static var openAppWhenRun: Bool = false
 
     func perform() async throws -> some IntentResult {
-        runAppleScript(#"tell application "Spotify" to playpause"#)
-        try? await Task.sleep(for: .milliseconds(400))
+        SpotifyBridge.playPause()
+        try? await Task.sleep(for: .milliseconds(500))
         WidgetCenter.shared.reloadAllTimelines()
         return .result()
     }
@@ -16,10 +17,11 @@ struct PlayPauseIntent: AppIntent {
 struct NextTrackIntent: AppIntent {
     static var title: LocalizedStringResource = "Next Track"
     static var description = IntentDescription("Skip to next track in Spotify")
+    static var openAppWhenRun: Bool = false
 
     func perform() async throws -> some IntentResult {
-        runAppleScript(#"tell application "Spotify" to next track"#)
-        try? await Task.sleep(for: .milliseconds(600))
+        SpotifyBridge.nextTrack()
+        try? await Task.sleep(for: .milliseconds(1000))
         WidgetCenter.shared.reloadAllTimelines()
         return .result()
     }
@@ -28,10 +30,11 @@ struct NextTrackIntent: AppIntent {
 struct PreviousTrackIntent: AppIntent {
     static var title: LocalizedStringResource = "Previous Track"
     static var description = IntentDescription("Go to previous track in Spotify")
+    static var openAppWhenRun: Bool = false
 
     func perform() async throws -> some IntentResult {
-        runAppleScript(#"tell application "Spotify" to previous track"#)
-        try? await Task.sleep(for: .milliseconds(600))
+        SpotifyBridge.previousTrack()
+        try? await Task.sleep(for: .milliseconds(1000))
         WidgetCenter.shared.reloadAllTimelines()
         return .result()
     }
@@ -40,10 +43,4 @@ struct PreviousTrackIntent: AppIntent {
 struct SpotifyWidgetConfigIntent: WidgetConfigurationIntent {
     static var title: LocalizedStringResource = "Spotify Now Playing"
     static var description = IntentDescription("Shows currently playing track from Spotify")
-}
-
-private func runAppleScript(_ source: String) {
-    var error: NSDictionary?
-    guard let script = NSAppleScript(source: source) else { return }
-    script.executeAndReturnError(&error)
 }

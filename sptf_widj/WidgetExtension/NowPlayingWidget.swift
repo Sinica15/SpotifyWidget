@@ -37,8 +37,6 @@ struct NowPlayingProvider: AppIntentTimelineProvider {
     typealias Entry = NowPlayingEntry
     typealias Intent = SpotifyWidgetConfigIntent
 
-    static let suiteName = "com.sptfwidj.shared"
-
     func placeholder(in context: Context) -> NowPlayingEntry {
         .placeholder
     }
@@ -49,43 +47,23 @@ struct NowPlayingProvider: AppIntentTimelineProvider {
 
     func timeline(for configuration: SpotifyWidgetConfigIntent, in context: Context) async -> Timeline<NowPlayingEntry> {
         let entry = await fetchEntry()
-        let interval: TimeInterval = entry.trackInfo != nil ? 15 : 30
+        let interval: TimeInterval = entry.trackInfo?.isPlaying == true ? 5 : 15
         return Timeline(entries: [entry], policy: .after(Date().addingTimeInterval(interval)))
     }
 
     private func fetchEntry() async -> NowPlayingEntry {
-        let plistPath = NSHomeDirectory() + "/Library/Preferences/com.sptfwidj.shared.plist"
-
-        guard let plist = NSDictionary(contentsOfFile: plistPath) as? [String: Any],
-              let data = plist["trackData"] as? [String: Any],
-              let name = data["name"] as? String,
-              let artist = data["artist"] as? String else {
+        guard let track = SpotifyBridge.getCurrentTrack() else {
             return .empty
         }
 
-        let artworkURLString: String? = {
-            let url = data["artworkURL"] as? String ?? ""
-            return (url.isEmpty || url == "missing value") ? nil : url
-        }()
-
-        let trackInfo = TrackInfo(
-            name: name,
-            artist: artist,
-            album: data["album"] as? String ?? "",
-            artworkURL: artworkURLString,
-            isPlaying: data["isPlaying"] as? Bool ?? false,
-            duration: data["duration"] as? Double ?? 0,
-            position: data["position"] as? Double ?? 0
-        )
-
         var artworkData: Data?
-        if let urlString = trackInfo.artworkURL, let url = URL(string: urlString) {
+        if let urlString = track.artworkURL, let url = URL(string: urlString) {
             var request = URLRequest(url: url)
             request.timeoutInterval = 5
             artworkData = try? await URLSession.shared.data(for: request).0
         }
 
-        return NowPlayingEntry(date: Date(), trackInfo: trackInfo, artworkData: artworkData)
+        return NowPlayingEntry(date: Date(), trackInfo: track, artworkData: artworkData)
     }
 }
 
